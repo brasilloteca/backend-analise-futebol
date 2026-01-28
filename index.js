@@ -35,12 +35,24 @@ Texto curto (até 1 minuto).
     });
 
     const data = await r.json();
-    res.json({ texto: data[0]?.generated_text || "Sem resposta." });
+
+    // Hugging Face às vezes retorna um array de objetos ou objeto diferente
+    let texto = "";
+    if (Array.isArray(data)) {
+      if (data[0]?.generated_text) texto = data[0].generated_text;
+      else if (data[0]?.generated_texts) texto = data[0].generated_texts[0];
+    } else if (data.generated_text) {
+      texto = data.generated_text;
+    }
+
+    if (!texto) texto = "Não foi possível gerar a análise.";
+
+    res.json({ texto });
 
   } catch (e) {
+    console.error(e);
     res.status(500).json({ erro: "Falha na IA" });
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("Servidor rodando na porta " + PORT));
+app.listen(3000, () => console.log("Servidor rodando"));
