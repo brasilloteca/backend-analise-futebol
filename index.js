@@ -31,23 +31,19 @@ Texto curto (até 1 minuto).
         "Authorization": `Bearer ${process.env.HF_TOKEN}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ inputs: prompt })
+      body: JSON.stringify({
+        inputs: prompt,
+        parameters: { max_new_tokens: 200 }
+      })
     });
 
     const data = await r.json();
 
-    // Hugging Face às vezes retorna um array de objetos ou objeto diferente
-    let texto = "";
-    if (Array.isArray(data)) {
-      if (data[0]?.generated_text) texto = data[0].generated_text;
-      else if (data[0]?.generated_texts) texto = data[0].generated_texts[0];
-    } else if (data.generated_text) {
-      texto = data.generated_text;
+    if (!data || !data[0]?.generated_text) {
+      res.json({ texto: "não foi possível gerar análise" });
+    } else {
+      res.json({ texto: data[0].generated_text });
     }
-
-    if (!texto) texto = "Não foi possível gerar a análise.";
-
-    res.json({ texto });
 
   } catch (e) {
     console.error(e);
@@ -55,4 +51,4 @@ Texto curto (até 1 minuto).
   }
 });
 
-app.listen(3000, () => console.log("Servidor rodando"));
+app.listen(3000, () => console.log("Servidor rodando na porta 3000"));
