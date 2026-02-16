@@ -25,7 +25,7 @@ Texto curto (até 1 minuto).
 `;
 
   try {
-    const r = await fetch("https://api-inference.huggingface.co/models/google/flan-t5-large", {
+    const r = await fetch("https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${process.env.HF_TOKEN}`,
