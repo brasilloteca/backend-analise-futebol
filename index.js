@@ -39,11 +39,22 @@ Texto curto (até 1 minuto).
 
     const data = await r.json();
 
-    if (!data || !data[0]?.generated_text) {
-      res.json({ texto: "não foi possível gerar análise" });
-    } else {
-      res.json({ texto: data[0].generated_text });
-    }
+    let texto = "não foi possível gerar análise";
+
+if (Array.isArray(data) && data[0]?.generated_text) {
+  texto = data[0].generated_text;
+}
+else if (data.generated_text) {
+  texto = data.generated_text;
+}
+else if (data.error) {
+  texto = "IA indisponível: " + data.error;
+}
+else {
+  texto = JSON.stringify(data);
+}
+
+res.json({ texto });
 
   } catch (e) {
     console.error(e);
