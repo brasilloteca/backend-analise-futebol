@@ -30,7 +30,7 @@ Regras:
 
   try {
     const r = await fetch(
-      "https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.2",
+      "https://router.huggingface.co/v1/chat/completions",
       {
         method: "POST",
         headers: {
@@ -38,28 +38,32 @@ Regras:
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          inputs: prompt,
-          parameters: {
-            max_new_tokens: 200,
-            temperature: 0.7
-          }
+          model: "mistralai/Mistral-7B-Instruct-v0.2",
+          messages: [
+            { role: "user", content: prompt }
+          ],
+          max_tokens: 200,
+          temperature: 0.7
         })
       }
     );
 
-    const data = await r.json();
-    console.log("HF RESPONSE:", data);
+    const text = await r.text();
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      console.log("RESPOSTA NÃO JSON:", text);
+      return res.json({ texto: "Erro de resposta da IA: " + text });
+    }
 
     let texto = "não foi possível gerar análise";
 
-    if (Array.isArray(data) && data[0]?.generated_text) {
-      texto = data[0].generated_text;
-    } else if (data.generated_text) {
-      texto = data.generated_text;
+    if (data.choices?.[0]?.message?.content) {
+      texto = data.choices[0].message.content;
     } else if (data.error) {
-      texto = "IA indisponível: " + data.error;
-    } else {
-      texto = JSON.stringify(data);
+      texto = "IA indisponível: " + data.error.message;
     }
 
     res.json({ texto });
