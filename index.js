@@ -16,48 +16,56 @@ app.post("/analisar", async (req, res) => {
   const prompt = `
 Analise o jogo ${casa} x ${fora} obedecendo rigorosamente:
 
-- Desfalques reais e confirmados
-- Quem é mais prejudicado
-- Impacto tático direto
-- Linguagem objetiva e profissional
-- Conclusão com favorito e placar plausível
-Texto curto (até 1 minuto).
+1. Abertura direta contextualizando o jogo
+2. Impacto dos desfalques (quem perde mais)
+3. Leitura tática objetiva
+4. Conclusão com favorito e placar plausível
+
+Regras:
+- Linguagem profissional
+- Tom seguro
+- Sem rodeios
+- Curto e direto
 `;
 
   try {
-    const r = await fetch("const r = await fetch("https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.2", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.HF_TOKEN}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        inputs: prompt,
-        parameters: { max_new_tokens: 200 }
-      })
-    });
+    const r = await fetch(
+      "https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.2",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.HF_TOKEN}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          inputs: prompt,
+          parameters: {
+            max_new_tokens: 200,
+            temperature: 0.7
+          }
+        })
+      }
+    );
 
     const data = await r.json();
+    console.log("HF RESPONSE:", data);
 
     let texto = "não foi possível gerar análise";
 
-if (Array.isArray(data) && data[0]?.generated_text) {
-  texto = data[0].generated_text;
-}
-else if (data.generated_text) {
-  texto = data.generated_text;
-}
-else if (data.error) {
-  texto = "IA indisponível: " + data.error;
-}
-else {
-  texto = JSON.stringify(data);
-}
+    if (Array.isArray(data) && data[0]?.generated_text) {
+      texto = data[0].generated_text;
+    } else if (data.generated_text) {
+      texto = data.generated_text;
+    } else if (data.error) {
+      texto = "IA indisponível: " + data.error;
+    } else {
+      texto = JSON.stringify(data);
+    }
 
-res.json({ texto });
+    res.json({ texto });
 
   } catch (e) {
-    console.error(e);
+    console.error("ERRO:", e);
     res.status(500).json({ erro: "Falha na IA" });
   }
 });
