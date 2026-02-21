@@ -6,6 +6,13 @@ import rateLimit from "express-rate-limit";
 const app = express();
 app.use(cors());
 app.use(express.json());
+const limiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  message: { erro: "Muitas requisições. Aguarde 1 minuto." }
+});
+
+app.use(limiter);
 
 app.post("/analisar", async (req, res) => {
   const { casa, fora } = req.body;
