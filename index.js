@@ -29,6 +29,10 @@ Regras:
 `;
 
   try {
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+
     const r = await fetch(
       "https://router.huggingface.co/v1/chat/completions",
       {
@@ -42,11 +46,14 @@ Regras:
           messages: [
             { role: "user", content: prompt }
           ],
-          max_tokens: 3000,
+          max_tokens: 1200,
           temperature: 0.7
-        })
+        }),
+        signal: controller.signal
       }
     );
+
+    clearTimeout(timeout);
 
     const text = await r.text();
 
@@ -69,6 +76,10 @@ Regras:
     res.json({ texto });
 
   } catch (e) {
+    if (e.name === "AbortError") {
+      return res.json({ texto: "IA demorou demais para responder." });
+    }
+
     console.error("ERRO:", e);
     res.status(500).json({ erro: "Falha na IA" });
   }
