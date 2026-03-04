@@ -6,12 +6,13 @@ import rateLimit from "express-rate-limit";
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Limitação de requisições
 const limiter = rateLimit({
   windowMs: 60 * 1000,
   max: 10,
   message: { erro: "Muitas requisições. Aguarde 1 minuto." }
 });
-
 app.use(limiter);
 
 app.post("/analisar", async (req, res) => {
@@ -21,25 +22,59 @@ app.post("/analisar", async (req, res) => {
     return res.status(400).json({ erro: "Times não informados" });
   }
 
+  // PROMPT MESTRE — GESTÃO DE BANCA v3.1
   const prompt = `
-Analise o jogo ${casa} x ${fora} obedecendo rigorosamente:
+GESTÃO DE BANCA — PROMPT MESTRE v3.1 (WEB-VALIDADO)
 
-1. Abertura direta contextualizando o jogo
-2. Impacto dos desfalques (quem perde mais)
-3. Leitura tática objetiva
-4. Conclusão com favorito e placar plausível
+Analise a partida REAL entre ${casa} x ${fora} obedecendo rigorosamente as etapas e regras:
 
-Regras:
-- Linguagem profissional
-- Tom seguro
-- Sem rodeios
-- Curto e direto
+ETAPA 0 — REGRA ABSOLUTA
+• Tratar toda partida como REAL e OFICIAL
+• Abortos apenas por erro estrutural
+
+ETAPA 1 — IDENTIFICAÇÃO AUTOMÁTICA (WEB)
+• Buscar na web: competição oficial, país, liga/torneio, data/hora, tipo de jogo, fase da competição
+
+ETAPA 2 — COLETA ESTRUTURAL (WEB + BASE)
+• Gols marcados/sofridos (temporada atual)
+• xG/xGA recentes
+• Forma últimos 5 jogos
+• Desfalques relevantes
+• Estabilidade tática
+• Ranking da liga
+• Mando de campo
+• Consistência estatística
+
+ETAPA 3 — MODELO MATEMÁTICO
+• Probabilidade Real = (xG estrutural + média histórica + força relativa + ajuste de variância) ÷ 4
+
+ETAPA 4 — CLASSIFICAÇÃO
+• ELITE → ≥72%
+• FORTE → 64–71%
+• MÉDIO → 55–63%
+• FRACO → <55%
+
+ETAPA 5 — PLACAR PROVÁVEL
+• Usar Poisson ajustado por ataque vs defesa, mando, variância
+
+ETAPA 6 — ESCOLHA DE MERCADO
+• Selecionar SOMENTE o maior valor probabilístico de: Resultado, Dupla Chance, Over/Under, Ambas Marcam
+
+ETAPA 7 — FORMATO DE SAÍDA (FIXO)
+Para este jogo, retorne EXATAMENTE:
+JOGO:
+COMPETIÇÃO:
+DATA/HORA:
+PROBABILIDADE:
+CLASSIFICAÇÃO:
+MERCADO:
+PLACAR:
+STATUS: (se cobertura <70%, indicar BAIXA CONFIABILIDADE)
 `;
 
   try {
-
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    const timeout = setTimeout(() => controller.abort(), 20000); // 20s timeout
 
     const r = await fetch(
       "https://router.huggingface.co/v1/chat/completions",
@@ -54,8 +89,8 @@ Regras:
           messages: [
             { role: "user", content: prompt }
           ],
-          max_tokens: 1200,
-          temperature: 0.7
+          max_tokens: 2000,
+          temperature: 0.0 // determinístico
         }),
         signal: controller.signal
       }
