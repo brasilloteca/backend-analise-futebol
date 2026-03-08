@@ -85,7 +85,7 @@ STATUS: (se cobertura <70%, indicar BAIXA CONFIABILIDADE)
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "mistralai/Mistral-7B-Instruct-v0.2",
+          model: "meta-llama/Llama-3.1-8B-Instruct",
           messages: [
             { role: "user", content: prompt }
           ],
